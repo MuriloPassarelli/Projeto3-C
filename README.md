@@ -37,34 +37,42 @@ Login
 
 
 Usuários devem autenticar-se com CPF e senha.
+
 Consulta de Saldo
 
 
 Exibir saldo de reais, bitcoin, ethereum e ripple da carteira de investimentos.
+
 Consulta de Extrato
 
 
 Exibir o extrato de operações, incluindo data, valores e taxas, salvo em arquivo texto.
+
 Depósito
 
 
 Permitir o depósito de reais na carteira de investimento.
+
 Saque
 
 
 Permitir o saque de reais, com validação de senha.
+
 Compra de Criptomoedas
 
 
 Permitir a compra de criptomoedas, exibindo informações da compra e taxa cobrada.
+
 Venda de Criptomoedas
 
 
 Permitir a venda de criptomoedas, exibindo informações da venda e taxa cobrada.
+
 Atualização de Cotação
 
 
 Atualizar a cotação das criptomoedas com variação aleatória de no máximo 5% e mínimo -5% do valor atual.
+
 Armazenamento de Dados
 
 
