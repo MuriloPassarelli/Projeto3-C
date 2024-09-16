@@ -6,6 +6,7 @@ Gabriel Furlani           RA: 24.124.062-1
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Objetivo do Projeto
+
 O objetivo deste projeto é desenvolver uma Exchange de Criptomoedas em C, que permita aos usuários comprar, vender e gerenciar criptomoedas. A Exchange suportará três tipos de criptomoedas: Bitcoin, Ethereum e Ripple, cada uma com diferentes taxas para transações de compra e venda. O sistema permitirá realizar operações básicas como login, consulta de saldo, depósitos, saques, e também a compra e venda de criptomoedas, com funcionalidades adicionais para a atualização de cotações e armazenamento de dados.
 
 Especificações
