@@ -141,7 +141,9 @@ Para fazer login na conta existente (veja acima).
 3. Sair
 Para sair do programa.
 
-Observações
+Observações:
+
+
 O programa utiliza arquivos de texto para armazenar informações sobre os usuários e suas transações. As atualizações nas informações dos usuários são salvas automaticamente após cada operação.
 As cotações das criptomoedas são atualizadas com uma variação aleatória sempre que a opção "Atualizar cotação" é selecionada.
 
