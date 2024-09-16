@@ -10,19 +10,31 @@ Objetivo do Projeto
 O objetivo deste projeto é desenvolver uma Exchange de Criptomoedas em C, que permita aos usuários comprar, vender e gerenciar criptomoedas. A Exchange suportará três tipos de criptomoedas: Bitcoin, Ethereum e Ripple, cada uma com diferentes taxas para transações de compra e venda. O sistema permitirá realizar operações básicas como login, consulta de saldo, depósitos, saques, e também a compra e venda de criptomoedas, com funcionalidades adicionais para a atualização de cotações e armazenamento de dados.
 
 Especificações
+
 A Exchange suportará as seguintes criptomoedas e taxas:
 
 Bitcoin (BTC)
+
 Taxa de Compra: 2%
+
 Taxa de Venda: 3%
+
 Ethereum (ETH)
+
 Taxa de Compra: 1%
+
 Taxa de Venda: 2%
+
 Ripple (XRP)
+
 Taxa de Compra: 1%
+
 Taxa de Venda: 1%
+
 Funcionalidades
+
 Login
+
 
 Usuários devem autenticar-se com CPF e senha.
 Consulta de Saldo
