@@ -98,8 +98,7 @@ Após a compilação, execute o programa gerado com o comando: ./exchange
 
 1. Registro de Usuário
 
-   
-Para registrar um novo usuário:
+   Para registrar um novo usuário:
 Selecione a opção 1. Registrar no menu principal.
 Informe o CPF (deve conter 11 dígitos) e a senha (6 dígitos).
 O usuário será registrado com um saldo inicial de R$0,00 e sem criptomoedas.
