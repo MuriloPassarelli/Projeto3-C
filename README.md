@@ -39,26 +39,34 @@ Login
 Usuários devem autenticar-se com CPF e senha.
 Consulta de Saldo
 
+
 Exibir saldo de reais, bitcoin, ethereum e ripple da carteira de investimentos.
 Consulta de Extrato
+
 
 Exibir o extrato de operações, incluindo data, valores e taxas, salvo em arquivo texto.
 Depósito
 
+
 Permitir o depósito de reais na carteira de investimento.
 Saque
+
 
 Permitir o saque de reais, com validação de senha.
 Compra de Criptomoedas
 
+
 Permitir a compra de criptomoedas, exibindo informações da compra e taxa cobrada.
 Venda de Criptomoedas
+
 
 Permitir a venda de criptomoedas, exibindo informações da venda e taxa cobrada.
 Atualização de Cotação
 
+
 Atualizar a cotação das criptomoedas com variação aleatória de no máximo 5% e mínimo -5% do valor atual.
 Armazenamento de Dados
+
 
 Armazenar dados de até 10 usuários e o histórico das últimas 100 transações por usuário em arquivos binários.
 
@@ -66,15 +74,19 @@ Armazenar dados de até 10 usuários e o histórico das últimas 100 transaçõe
 
 Compilação
 
+
 Utilize um compilador de C como gcc. Navegue até o diretório do projeto e compile o código com o comando:  gcc -o exchange exchange.c
 
 Execução
+
 
 Após a compilação, execute o programa gerado com o comando: ./exchange
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 1. Registro de Usuário
+
+   
 Para registrar um novo usuário:
 Selecione a opção 1. Registrar no menu principal.
 Informe o CPF (deve conter 11 dígitos) e a senha (6 dígitos).
