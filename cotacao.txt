@@ -1,0 +1,2 @@
+"Bitcoin", "Ethereum", "Ripple"
+325751, 15325, 2

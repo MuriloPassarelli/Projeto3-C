@@ -7,8 +7,10 @@
 #define MAX_MOEDA_TAMANHO 20
 #define ARQUIVO_USUARIOS "usuarios.txt"
 #define ARQUIVO_EXTRATO "extrato.txt"
+#define ARQUIVO_COTACAO "cotacao.txt"
 #define MAX_USUARIOS 10
 #define MAX_TRANSACOES 100
+
 // Estrutura para armazenar dados do usuário
 typedef struct {
     char cpf[MAX_CPF_TAMANHO];
@@ -22,10 +24,28 @@ typedef struct {
 } Usuario;
 Usuario usuarios[MAX_USUARIOS];
 int num_usuarios = 0; // Contador de usuários
-// Função para obter a cotação de uma criptomoeda
+
+// OBTER COTACAO NOVA SENDO FEITA!! NAO ESTA COMPLETA!!
+char obter_cotacoes(){
+    static double cotacoes[][];
+    FILE fp* = fopen(ARQUIVO_COTACAO, "r+");
+    char buffer[100];
+
+    if (fgets(buffer, sizeof(buffer), file) != NULL) {
+        sscanf(buffer, "%d,%d,%d", &bitcoin, &ethereum, &ripple);
+    }
+
+    fclose(fp);
+}
+double obter_cotacao_especifica(const char *criptomoeda){
+    obter_cotacoes();
+}
+
+//OBTER COTACAO ANTIGO!!!
 double obter_cotacao(const char *criptomoeda) {
-    static double cotacoes[] = {325751, 15325, 2}; // Bitcoin, Ethereum, Ripple
     static char *nomes[] = {"Bitcoin", "Ethereum", "Ripple"};
+    static double cotacoes[] = {325751, 15325, 2}; // Bitcoin, Ethereum, Ripple
+   
     for (int i = 0; i < 3; i++) {
         if (strcmp(criptomoeda, nomes[i]) == 0) {
             double variacao = (rand() / (double)RAND_MAX) * 0.1 - 0.05; // Variação entre -5% e +5%
@@ -37,6 +57,7 @@ double obter_cotacao(const char *criptomoeda) {
     printf("Criptomoeda nao encontrada.\n");
     return -1;
 }
+
 // Função para salvar usuários e saldos em um arquivo binário
 void salvar_usuarios() {
     FILE *file = fopen(ARQUIVO_USUARIOS, "wb");
@@ -48,6 +69,7 @@ void salvar_usuarios() {
     fwrite(usuarios, sizeof(Usuario), num_usuarios, file);
     fclose(file);
 }
+
 // Função para ler usuários e saldos do arquivo binário
 void ler_usuarios() {
     FILE *file = fopen(ARQUIVO_USUARIOS, "rb");
@@ -59,6 +81,7 @@ void ler_usuarios() {
     fread(usuarios, sizeof(Usuario), num_usuarios, file);
     fclose(file);
 }
+
 // Função para registrar um novo usuário
 void registrar() {
     if (num_usuarios >= MAX_USUARIOS) {
@@ -97,6 +120,7 @@ void registrar() {
     salvar_usuarios();
     printf("Usuario registrado com sucesso!\n");
 }
+
 // Função para verificar se o usuário existe e a senha está correta
 int verificar_usuario(const char *cpf, const char *senha) {
     for (int i = 0; i < num_usuarios; i++) {
@@ -106,6 +130,7 @@ int verificar_usuario(const char *cpf, const char *senha) {
     }
     return -1;
 }
+
 // Função para exibir o resumo das informações do usuário
 void exibir_resumo(int index) {
     printf("\nResumo da Conta:\n");
@@ -115,6 +140,7 @@ void exibir_resumo(int index) {
     printf("Ethereum: %.8f\n", usuarios[index].ethereum);
     printf("Ripple: %.8f\n", usuarios[index].ripple);
 }
+
 // Função para consultar saldo do investidor
 void consultar_saldo(int index) {
     printf("Saldo do CPF %s:\n", usuarios[index].cpf);
@@ -123,6 +149,7 @@ void consultar_saldo(int index) {
     printf("Ethereum: %.8f\n", usuarios[index].ethereum);
     printf("Ripple: %.8f\n", usuarios[index].ripple);
 }
+
 // Função para registrar uma transação
 void registrar_transacao(int index, double valor, double taxa, int tipo) {
     if (usuarios[index].num_transacoes >= MAX_TRANSACOES) {
@@ -145,6 +172,7 @@ void registrar_transacao(int index, double valor, double taxa, int tipo) {
             usuarios[index].cpf, data, valor, taxa * 100, tipo == 0 ? "Compra" : "Venda");
     fclose(file);
 }
+
 // Função para depositar dinheiro na conta do investidor
 void depositar(int index) {
     double valor;
@@ -160,6 +188,7 @@ void depositar(int index) {
     printf("Deposito de R$%.2f realizado com sucesso!\n", valor);
     exibir_resumo(index);
 }
+
 // Função para sacar dinheiro da conta do investidor
 void sacar(int index) {
     char senha[MAX_SENHA_TAMANHO];
@@ -186,6 +215,7 @@ void sacar(int index) {
         printf("Saldo insuficiente.\n");
     }
 }
+
 // Função para comprar criptomoedas
 void comprar_criptomoedas(int index) {
     char senha[MAX_SENHA_TAMANHO];
@@ -245,6 +275,7 @@ void comprar_criptomoedas(int index) {
         printf("Saldo insuficiente para realizar a compra.\n");
     }
 }
+
 // Função para vender criptomoedas
 void vender_criptomoedas(int index) {
     char senha[MAX_SENHA_TAMANHO];
@@ -330,6 +361,7 @@ void vender_criptomoedas(int index) {
     printf("Venda realizada com sucesso!\n");
     printf("Quantidade: %.8f | Valor Total: R$%.2f (Taxa: R$%.2f)\n", quantidade, valor_final, valor_taxa);
 }
+
 // Exibir extratos do usuario
 void exibir_extrato(const char *cpf){
     char extrato;
@@ -347,7 +379,8 @@ void exibir_extrato(const char *cpf){
         printf("-----------------------------------------------\n");
     fclose(fp);
     return;
-};
+}
+
 // Função principal
 int main() {
     srand(time(NULL));
