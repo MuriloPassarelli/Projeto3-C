@@ -55,4 +55,4 @@ Para compilar e executar o projeto, siga os seguintes passos:
 
 ## Forma de Uso
 
-Após compilar e executar o programa, siga as instruções exibidas na tela para conseguir ter as novas funções de administrador do seu banco de criptomoedas.
+Após compilar e executar o programa, siga as instruções exibidas na tela para conseguir ter as novas funções de administrador do seu banco de criptomoedas, para todas as opções que for escolhida deve ter cofirmação antes.
