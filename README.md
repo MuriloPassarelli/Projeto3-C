@@ -40,7 +40,7 @@ Para compilar e executar o projeto, siga os seguintes passos:
 4. Compile o código:
 
     ```sh
-    gcc -o batalha_pokemon main.c batalha.c pokemon.c
+    gcc -o Projeto3-C
     ```
 5. De o Comit no código:
 
