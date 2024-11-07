@@ -43,7 +43,6 @@ double obter_cotacao(const char *criptomoeda){
             return cotacao;
         }
     }
-
     printf("Criptomoeda nao encontrada.\n");
     fclose(file);
     return -1;
