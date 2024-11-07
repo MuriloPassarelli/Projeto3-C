@@ -7,6 +7,7 @@
 #define MAX_MOEDA_TAMANHO 20
 #define ARQUIVO_USUARIOS "usuarios.txt"
 #define ARQUIVO_EXTRATO "extrato.txt"
+#define ARQUIVO_COTACAO "cotacao.txt"
 #define MAX_USUARIOS 10
 #define MAX_TRANSACOES 100
 
@@ -24,19 +25,26 @@ typedef struct {
 Usuario usuarios[MAX_USUARIOS];
 int num_usuarios = 0; // Contador de usuários
 
-// Função para obter a cotação de uma criptomoeda
-double obter_cotacao(const char *criptomoeda) {
-    static double cotacoes[] = {325751, 15325, 2}; // Bitcoin, Ethereum, Ripple
-    static char *nomes[] = {"Bitcoin", "Ethereum", "Ripple"};
-    for (int i = 0; i < 3; i++) {
-        if (strcmp(criptomoeda, nomes[i]) == 0) {
+// Função para obter as cotações das moedas
+double obter_cotacao(const char *criptomoeda){
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
+    if(file == NULL){
+        printf("Erro ao abrir o arquivo de cotacoes.\n");
+        return -1;
+    }
+
+    char nome[MAX_MOEDA_TAMANHO];
+    double cotacao;
+    while(fscanf(file, "%s %lf", nome, &cotacao) != EOF){
+        if(strcmp(criptomoeda, nome) == 0){
             double variacao = (rand() / (double)RAND_MAX) * 0.1 - 0.05; // Variação entre -5% e +5%
-            double nova_cotacao = cotacoes[i] * (1 + variacao);
-            cotacoes[i] = nova_cotacao;
-            return nova_cotacao;
+            cotacao *= (1 + variacao);
+            fclose(file);
+            return cotacao;
         }
     }
     printf("Criptomoeda nao encontrada.\n");
+    fclose(file);
     return -1;
 }
 
