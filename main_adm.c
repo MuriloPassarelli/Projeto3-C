@@ -1,189 +1,227 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
-// Estrutura para armazenar dados de investidor
-typedef struct {
-    char nome[50];
-    char cpf[12];
-    char senha[20];
-    double saldo;
-} Investidor;
+#define MAX_USUARIOS 100
+#define MAX_CRIPTOMOEDAS 50
+#define MAX_NOME 100
+#define MAX_CPF 12
+#define MAX_SENHA 20
 
-// Estrutura para armazenar dados de criptomoeda
 typedef struct {
-    char nome[20];
-    double cotacao;
-    double taxaCompra;
-    double taxaVenda;
+    char nome[MAX_NOME];
+    char cpf[MAX_CPF];
+    char senha[MAX_SENHA];
+    float saldo;
+} Usuario;
+
+typedef struct {
+    char nome[MAX_NOME];
+    float cotacao;
+    float taxa_compra;
+    float taxa_venda;
 } Criptomoeda;
 
-// Funções auxiliares
-bool verificarLogin(char cpf[], char senha[]);
-void cadastrarInvestidor();
-void excluirInvestidor();
-void cadastrarCriptomoeda();
-void excluirCriptomoeda();
-void consultarSaldoInvestidor();
-void consultarExtratoInvestidor();
-void atualizarCotacaoCriptomoedas();
+Usuario usuarios[MAX_USUARIOS];
+Criptomoeda criptomoedas[MAX_CRIPTOMOEDAS];
+int num_usuarios = 0, num_criptomoedas = 0;
 
-// Função principal
-int main() {
-    char cpf[12];
-    char senha[20];
-    
-    printf("== Sistema Administrador de Exchange ==\n");
-    printf("Digite seu CPF: ");
+void carregar_usuarios() {
+    FILE *file = fopen("usuarios.txt", "r");
+    if (!file) return;
+    while (fscanf(file, "%s %s %s %f\n", usuarios[num_usuarios].nome, usuarios[num_usuarios].cpf,
+                  usuarios[num_usuarios].senha, &usuarios[num_usuarios].saldo) != EOF) {
+        num_usuarios++;
+    }
+    fclose(file);
+}
+
+void carregar_criptomoedas() {
+    FILE *file = fopen("criptomoedas.txt", "r");
+    if (!file) return;
+    while (fscanf(file, "%s %f %f %f\n", criptomoedas[num_criptomoedas].nome, &criptomoedas[num_criptomoedas].cotacao,
+                  &criptomoedas[num_criptomoedas].taxa_compra, &criptomoedas[num_criptomoedas].taxa_venda) != EOF) {
+        num_criptomoedas++;
+    }
+    fclose(file);
+}
+
+void salvar_usuarios() {
+    FILE *file = fopen("usuarios.txt", "w");
+    if (!file) return;
+    for (int i = 0; i < num_usuarios; i++) {
+        fprintf(file, "%s %s %s %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].senha, usuarios[i].saldo);
+    }
+    fclose(file);
+}
+
+void salvar_criptomoedas() {
+    FILE *file = fopen("criptomoedas.txt", "w");
+    if (!file) return;
+    for (int i = 0; i < num_criptomoedas; i++) {
+        fprintf(file, "%s %.2f %.2f %.2f\n", criptomoedas[i].nome, criptomoedas[i].cotacao, criptomoedas[i].taxa_compra,
+                criptomoedas[i].taxa_venda);
+    }
+    fclose(file);
+}
+
+int efetuar_login(const char *cpf, const char *senha) {
+    for (int i = 0; i < num_usuarios; i++) {
+        if (strcmp(usuarios[i].cpf, cpf) == 0 && strcmp(usuarios[i].senha, senha) == 0) {
+            return 1; 
+        }
+    }
+    return 0; 
+}
+
+void cadastrar_usuario() {
+    Usuario novo_usuario;
+    printf("Digite o nome: ");
+    scanf("%s", novo_usuario.nome);
+    printf("Digite o CPF: ");
+    scanf("%s", novo_usuario.cpf);
+    printf("Digite a senha: ");
+    scanf("%s", novo_usuario.senha);
+    novo_usuario.saldo = 0.0;
+    usuarios[num_usuarios++] = novo_usuario;
+    salvar_usuarios();
+    printf("Usuário cadastrado com sucesso.\n");
+}
+
+void excluir_usuario() {
+    char cpf[MAX_CPF];
+    printf("Digite o CPF do usuário a ser excluído: ");
     scanf("%s", cpf);
-    printf("Digite sua senha: ");
+
+    for (int i = 0; i < num_usuarios; i++) {
+        if (strcmp(usuarios[i].cpf, cpf) == 0) {
+            printf("Usuário encontrado: %s, CPF: %s, Saldo: %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].saldo);
+            printf("Confirma a exclusão? (s/n): ");
+            char confirmacao;
+            scanf(" %c", &confirmacao);
+            if (confirmacao == 's' || confirmacao == 'S') {
+                for (int j = i; j < num_usuarios - 1; j++) {
+                    usuarios[j] = usuarios[j + 1];
+                }
+                num_usuarios--;
+                salvar_usuarios();
+                printf("Usuário excluído com sucesso.\n");
+            }
+            return;
+        }
+    }
+    printf("Usuário não encontrado.\n");
+}
+
+void cadastrar_criptomoeda() {
+    Criptomoeda nova_criptomoeda;
+    printf("Digite o nome da criptomoeda: ");
+    scanf("%s", nova_criptomoeda.nome);
+    printf("Digite a cotação inicial: ");
+    scanf("%f", &nova_criptomoeda.cotacao);
+    printf("Digite a taxa de compra: ");
+    scanf("%f", &nova_criptomoeda.taxa_compra);
+    printf("Digite a taxa de venda: ");
+    scanf("%f", &nova_criptomoeda.taxa_venda);
+    criptomoedas[num_criptomoedas++] = nova_criptomoeda;
+    salvar_criptomoedas();
+    printf("Criptomoeda cadastrada com sucesso.\n");
+
+    // modificar no txt
+}
+
+void excluir_criptomoeda() {
+    char nome[MAX_NOME];
+    printf("Digite o nome da criptomoeda a ser excluída: ");
+    scanf("%s", nome);
+
+    for (int i = 0; i < num_criptomoedas; i++) {
+        if (strcmp(criptomoedas[i].nome, nome) == 0) {
+            printf("Criptomoeda encontrada: %s, Cotação: %.2f, Taxa de Compra: %.2f, Taxa de Venda: %.2f\n", criptomoedas[i].nome,
+                   criptomoedas[i].cotacao, criptomoedas[i].taxa_compra, criptomoedas[i].taxa_venda);
+            printf("Confirma a exclusão? (s/n): ");
+            char confirmacao;
+            scanf(" %c", &confirmacao);
+            if (confirmacao == 's' || confirmacao == 'S') {
+                for (int j = i; j < num_criptomoedas - 1; j++) {
+                    criptomoedas[j] = criptomoedas[j + 1];
+                }
+                num_criptomoedas--;
+                salvar_criptomoedas();
+                printf("Criptomoeda excluída com sucesso.\n");
+            }
+            return;
+        }
+    }
+    printf("Criptomoeda não encontrada.\n");
+    // modificar no txt
+}
+
+void consultar_saldo() {
+    char cpf[MAX_CPF];
+    printf("Digite o CPF do usuário: ");
+    scanf("%s", cpf);
+
+    for (int i = 0; i < num_usuarios; i++) {
+        if (strcmp(usuarios[i].cpf, cpf) == 0) {
+            printf("Saldo de %s (CPF: %s): %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].saldo);
+            return;
+        }
+    }
+    printf("Usuário não encontrado.\n");
+    // consultar no txt
+}
+
+void consultar_extrato() {
+    // colocar o arquivo do extrato.txt pra mostrar aqui
+}
+
+void atualizar_cotacao() {
+    // colocar o arquivo do cotacao.txt para atualizar aqui
+}
+
+int main() {
+    char cpf[MAX_CPF], senha[MAX_SENHA];
+
+    carregar_usuarios();
+    carregar_criptomoedas();
+
+    printf("Digite o CPF do administrador: ");
+    scanf("%s", cpf);
+    printf("Digite a senha do administrador: ");
     scanf("%s", senha);
 
-    // Verificar login
-    if (!verificarLogin(cpf, senha)) {
-        printf("CPF ou senha incorretos.\n");
+    if (!efetuar_login(cpf, senha)) {
+        printf("Login falhou! Tente novamente.\n");
         return 1;
     }
 
     int opcao;
     do {
-        printf("\n== Menu Principal ==\n");
-        printf("1. Cadastrar novo investidor\n");
-        printf("2. Excluir investidor\n");
-        printf("3. Cadastrar criptomoeda\n");
-        printf("4. Excluir criptomoeda\n");
-        printf("5. Consultar saldo de investidor\n");
-        printf("6. Consultar extrato de investidor\n");
-        printf("7. Atualizar cotacao de criptomoedas\n");
+        printf("\nMenu Principal:\n");
+        printf("1. Cadastro de Usuário\n");
+        printf("2. Excluir Usuário\n");
+        printf("3. Cadastro de Criptomoeda\n");
+        printf("4. Excluir Criptomoeda\n");
+        printf("5. Consultar Saldo de Usuário\n");
+        printf("6. Consultar Extrato de Usuário\n");
+        printf("7. Atualizar Cotação de Criptomoedas\n");
         printf("0. Sair\n");
-        printf("Escolha uma opcao: ");
+        printf("Escolha uma opção: ");
         scanf("%d", &opcao);
 
         switch(opcao) {
-            case 1:
-                cadastrarInvestidor();
-                break;
-            case 2:
-                excluirInvestidor();
-                break;
-            case 3:
-                cadastrarCriptomoeda();
-                break;
-            case 4:
-                excluirCriptomoeda();
-                break;
-            case 5:
-                consultarSaldoInvestidor();
-                break;
-            case 6:
-                consultarExtratoInvestidor();
-                break;
-            case 7:
-                atualizarCotacaoCriptomoedas();
-                break;
-            case 0:
-                printf("Saindo...\n");
-                break;
-            default:
-                printf("Opcao invalida. Tente novamente.\n");
+            case 1: cadastrar_usuario(); break;
+            case 2: excluir_usuario(); break;
+            case 3: cadastrar_criptomoeda(); break;
+            case 4: excluir_criptomoeda(); break;
+            case 5: consultar_saldo(); break;
+            case 6: consultar_extrato(); break;
+            case 7: atualizar_cotacao(); break;
+            case 0: printf("Saindo...\n"); break;
+            default: printf("Opção inválida!\n"); break;
         }
     } while (opcao != 0);
 
     return 0;
-}
-
-// Função de login
-bool verificarLogin(char cpf[], char senha[]) {
-    // Implementar verificação com os dados armazenados dos administradores
-    // Exemplo fictício de login correto
-    if (strcmp(cpf, "12345678901") == 0 && strcmp(senha, "admin123") == 0) {
-        return true;
-    }
-    return false;
-}
-
-// Função para cadastrar investidor
-void cadastrarInvestidor() {
-    Investidor novoInvestidor;
-    printf("Digite o nome do investidor: ");
-    scanf("%s", novoInvestidor.nome);
-    printf("Digite o CPF do investidor: ");
-    scanf("%s", novoInvestidor.cpf);
-    printf("Digite a senha do investidor: ");
-    scanf("%s", novoInvestidor.senha);
-    novoInvestidor.saldo = 0.0;
-
-    FILE *file = fopen("investidores.txt", "a");
-    if (file != NULL) {
-        fprintf(file, "%s %s %s %.2f\n", novoInvestidor.nome, novoInvestidor.cpf, novoInvestidor.senha, novoInvestidor.saldo);
-        fclose(file);
-        printf("Investidor cadastrado com sucesso!\n");
-    } else {
-        printf("Erro ao abrir o arquivo de investidores.\n");
-    }
-}
-
-// Função para excluir investidor
-void excluirInvestidor() {
-    char cpf[12];
-    printf("Digite o CPF do investidor a ser excluido: ");
-    scanf("%s", cpf);
-
-    // Lógica de exclusão a ser implementada, semelhante ao que fizemos no programa do investidor
-}
-
-// Função para cadastrar criptomoeda
-void cadastrarCriptomoeda() {
-    Criptomoeda novaCriptomoeda;
-    printf("Digite o nome da criptomoeda: ");
-    scanf("%s", novaCriptomoeda.nome);
-    printf("Digite a cotacao inicial: ");
-    scanf("%lf", &novaCriptomoeda.cotacao);
-    printf("Digite a taxa de compra: ");
-    scanf("%lf", &novaCriptomoeda.taxaCompra);
-    printf("Digite a taxa de venda: ");
-    scanf("%lf", &novaCriptomoeda.taxaVenda);
-
-    FILE *file = fopen("criptomoedas.txt", "a");
-    if (file != NULL) {
-        fprintf(file, "%s %.2f %.2f %.2f\n", novaCriptomoeda.nome, novaCriptomoeda.cotacao, novaCriptomoeda.taxaCompra, novaCriptomoeda.taxaVenda);
-        fclose(file);
-        printf("Criptomoeda cadastrada com sucesso!\n");
-    } else {
-        printf("Erro ao abrir o arquivo de criptomoedas.\n");
-    }
-}
-
-// Função para excluir criptomoeda
-void excluirCriptomoeda() {
-    char nome[20];
-    printf("Digite o nome da criptomoeda a ser excluida: ");
-    scanf("%s", nome);
-
-    // Lógica de exclusão a ser implementada, semelhante ao que fizemos no programa do investidor
-}
-
-// Função para consultar saldo de um investidor
-void consultarSaldoInvestidor() {
-    char cpf[12];
-    printf("Digite o CPF do investidor: ");
-    scanf("%s", cpf);
-
-    // Lógica para consultar saldo e exibir
-}
-
-// Função para consultar extrato de um investidor
-void consultarExtratoInvestidor() {
-    char cpf[12];
-    printf("Digite o CPF do investidor: ");
-    scanf("%s", cpf);
-
-    // Lógica para consultar extrato e exibir
-}
-
-// Função para atualizar cotação de criptomoedas
-void atualizarCotacaoCriptomoedas() {
-    // Reutilizar função de atualização do programa do investidor
-    printf("Cotações atualizadas com sucesso!\n");
 }
