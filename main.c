@@ -11,7 +11,7 @@
 #define MAX_USUARIOS 10
 #define MAX_TRANSACOES 100
 
-// Estrutura para armazenar dados do usuário
+// Estrutura para armazenar dados do usuario
 typedef struct {
     char cpf[MAX_CPF_TAMANHO];
     char senha[MAX_SENHA_TAMANHO];
@@ -23,22 +23,40 @@ typedef struct {
     double transacoes[MAX_TRANSACOES][4]; // [data, valor, taxa, tipo]
 } Usuario;
 Usuario usuarios[MAX_USUARIOS];
-int num_usuarios = 0; // Contador de usuários
+int num_usuarios = 0; // Contador de usuarios
 
-// Função para obter as cotações das moedas
+// Estrutura das criptomoedas
+typedef struct {
+    char nome[MAX_MOEDA_TAMANHO];
+    double cotacao;
+} Criptomoeda;
+
+// Funcao para obter as cotacoes das moedas
 double obter_cotacao(const char *criptomoeda){
     FILE *file = fopen(ARQUIVO_COTACAO, "r");
     if(file == NULL){
-        printf("Erro ao abrir o arquivo de cotacoes.\n");
-        return -1;
+        file = fopen(ARQUIVO_COTACAO, "w"); // Cria o arquivo de cotacoes se nao existir um
+        if(file == NULL){
+            printf("Erro ao criar o arquivo de cotacoes.\n");
+            return -1;
+        }
+
+        fprintf(file, "Bitcoin 325751.00\n");
+        fprintf(file, "Ethereum 15325.00\n");
+        fprintf(file, "Ripple 1.90\n");
+        fclose(file);
+
+        file = fopen(ARQUIVO_COTACAO, "r"); // Volta pro modo leitura
+        if(file == NULL){
+            printf("Erro ao abrir o arquivo apos criacao.\n");
+            return -1;
+        }
     }
 
     char nome[MAX_MOEDA_TAMANHO];
     double cotacao;
     while(fscanf(file, "%s %lf", nome, &cotacao) != EOF){
         if(strcmp(criptomoeda, nome) == 0){
-            double variacao = (rand() / (double)RAND_MAX) * 0.1 - 0.05; // Variação entre -5% e +5%
-            cotacao *= (1 + variacao);
             fclose(file);
             return cotacao;
         }
@@ -48,7 +66,41 @@ double obter_cotacao(const char *criptomoeda){
     return -1;
 }
 
-// Função para salvar usuários e saldos em um arquivo binário
+//Funcao para atualizar as cotacoes apos uma transacao
+void atualizar_cotacao(){
+    char nome[MAX_MOEDA_TAMANHO];
+    double cotacao;
+    double variacao;
+    
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
+    
+    int linhas = 0;
+    char buffer[1024];
+    while(fgets(buffer, sizeof(buffer), file) != NULL){
+        linhas++; 
+    }
+    rewind(file);
+    
+    Criptomoeda arquivo_novo[linhas];
+    int contador = 0;
+    while(fscanf(file, "%s %lf", nome, &cotacao) != EOF){
+        variacao = (rand() / (double)RAND_MAX) * 0.1 - 0.05; // Variacao entre -5% e +5%
+        cotacao *= (1 + variacao);
+
+        strncpy(arquivo_novo[contador].nome, nome, MAX_MOEDA_TAMANHO);
+        arquivo_novo[contador].cotacao = cotacao;
+        contador++;
+    }
+
+    file = fopen(ARQUIVO_COTACAO, "w");
+    for(int i=0; i < contador; i++){
+        fprintf(file, "%s %lf\n", arquivo_novo[i].nome, arquivo_novo[i].cotacao);
+    }
+    
+    fclose(file);
+}
+
+// Funcao para salvar usuarios e saldos em um arquivo binario
 void salvar_usuarios() {
     FILE *file = fopen(ARQUIVO_USUARIOS, "wb");
     if (file == NULL) {
@@ -60,7 +112,7 @@ void salvar_usuarios() {
     fclose(file);
 }
 
-// Função para ler usuários e saldos do arquivo binário
+// Funcao para ler usuarios e saldos do arquivo binario
 void ler_usuarios() {
     FILE *file = fopen(ARQUIVO_USUARIOS, "rb");
     if (file == NULL) {
@@ -72,7 +124,7 @@ void ler_usuarios() {
     fclose(file);
 }
 
-// Função para registrar um novo usuário
+// Funcao para registrar um novo usuario
 void registrar() {
     if (num_usuarios >= MAX_USUARIOS) {
         printf("Numero maximo de usuarios atingido.\n");
@@ -111,7 +163,7 @@ void registrar() {
     printf("Usuario registrado com sucesso!\n");
 }
 
-// Função para verificar se o usuário existe e a senha está correta
+// Funcao para verificar se o usuario existe e a senha esta correta
 int verificar_usuario(const char *cpf, const char *senha) {
     for (int i = 0; i < num_usuarios; i++) {
         if (strcmp(cpf, usuarios[i].cpf) == 0 && strcmp(senha, usuarios[i].senha) == 0) {
@@ -121,7 +173,7 @@ int verificar_usuario(const char *cpf, const char *senha) {
     return -1;
 }
 
-// Função para exibir o resumo das informações do usuário
+// Funcao para exibir o resumo das informacoes do usuario
 void exibir_resumo(int index) {
     printf("\nResumo da Conta:\n");
     printf("CPF: %s\n", usuarios[index].cpf);
@@ -131,7 +183,7 @@ void exibir_resumo(int index) {
     printf("Ripple: %.8f\n", usuarios[index].ripple);
 }
 
-// Função para consultar saldo do investidor
+// Funcao para consultar saldo do investidor
 void consultar_saldo(int index) {
     printf("Saldo do CPF %s:\n", usuarios[index].cpf);
     printf("Reais: R$%.2f\n", usuarios[index].saldo);
@@ -140,10 +192,10 @@ void consultar_saldo(int index) {
     printf("Ripple: %.8f\n", usuarios[index].ripple);
 }
 
-// Função para registrar uma transação
+// Funcao para registrar uma transacao
 void registrar_transacao(int index, double valor, double taxa, int tipo) {
     if (usuarios[index].num_transacoes >= MAX_TRANSACOES) {
-        printf("Número maximo de transacoes atingido.\n");
+        printf("Numero maximo de transacoes atingido.\n");
         return;
     }
     double data = (double)time(NULL); // Data em timestamp
@@ -163,7 +215,7 @@ void registrar_transacao(int index, double valor, double taxa, int tipo) {
     fclose(file);
 }
 
-// Função para depositar dinheiro na conta do investidor
+// Funcao para depositar dinheiro na conta do investidor
 void depositar(int index) {
     double valor;
     printf("Informe o valor a ser depositado: R$");
@@ -174,12 +226,12 @@ void depositar(int index) {
     }
     usuarios[index].saldo += valor;
     salvar_usuarios();
-    registrar_transacao(index, valor, 0, -1); // -1 para depósito
+    registrar_transacao(index, valor, 0, -1); // -1 para deposito
     printf("Deposito de R$%.2f realizado com sucesso!\n", valor);
     exibir_resumo(index);
 }
 
-// Função para sacar dinheiro da conta do investidor
+// Funcao para sacar dinheiro da conta do investidor
 void sacar(int index) {
     char senha[MAX_SENHA_TAMANHO];
     double valor;
@@ -206,7 +258,7 @@ void sacar(int index) {
     }
 }
 
-// Função para comprar criptomoedas
+// Funcao para comprar criptomoedas
 void comprar_criptomoedas(int index) {
     char senha[MAX_SENHA_TAMANHO];
     int opcao;
@@ -218,9 +270,9 @@ void comprar_criptomoedas(int index) {
         return;
     }
     printf("\nOpcoes disponiveis para compra:\n");
-    printf("1. Bitcoin (Preço Atual: R$%.2f)\n", obter_cotacao("Bitcoin"));
-    printf("2. Ethereum (Preço Atual: R$%.2f)\n", obter_cotacao("Ethereum"));
-    printf("3. Ripple (Preço Atual: R$%.2f)\n", obter_cotacao("Ripple"));
+    printf("1. Bitcoin (Preco Atual: R$%.2f)\n", obter_cotacao("Bitcoin"));
+    printf("2. Ethereum (Preco Atual: R$%.2f)\n", obter_cotacao("Ethereum"));
+    printf("3. Ripple (Preco Atual: R$%.2f)\n", obter_cotacao("Ripple"));
     printf("Escolha uma opcao: ");
     scanf("%d", &opcao);
     double preco, taxa, valor_total;
@@ -238,7 +290,7 @@ void comprar_criptomoedas(int index) {
             taxa = 0.01;
             break;
         default:
-            printf("Opção invalida.\n");
+            printf("Opcao invalida.\n");
             return;
     }
     printf("Informe a quantidade que deseja comprar: ");
@@ -266,7 +318,7 @@ void comprar_criptomoedas(int index) {
     }
 }
 
-// Função para vender criptomoedas
+// Funcao para vender criptomoedas
 void vender_criptomoedas(int index) {
     char senha[MAX_SENHA_TAMANHO];
     int opcao;
@@ -353,7 +405,7 @@ void vender_criptomoedas(int index) {
 }
 
 // Exibir extratos do usuario
-void exibir_extrato(const char *cpf){
+void exibir_extrato(int index){
     char extrato;
     FILE *fp = fopen(ARQUIVO_EXTRATO, "r");
         if(fp == NULL){
@@ -361,7 +413,7 @@ void exibir_extrato(const char *cpf){
             return;
         }
         char linha[255];
-        printf("\nExtratos de Transacoes do CPF: %S\n", cpf);
+        printf("\nExtratos de Transacoes do CPF: %s\n", usuarios[index].cpf);
         printf("-----------------------------------------------\n");
         while(fgets(linha, sizeof(linha), fp) != NULL){
             printf("%s", linha);
@@ -371,7 +423,7 @@ void exibir_extrato(const char *cpf){
     return;
 };
 
-// Função principal
+// Funcao principal
 int main() {
     srand(time(NULL));
     ler_usuarios();
@@ -419,9 +471,11 @@ int main() {
                                 break;
                             case 4:
                                 comprar_criptomoedas(index);
+                                atualizar_cotacao();
                                 break;
                             case 5:
                                 vender_criptomoedas(index);
+                                atualizar_cotacao();
                                 break;
                             case 6:
                                 exibir_extrato(index);
@@ -430,7 +484,7 @@ int main() {
                                 printf("Saindo...\n");
                                 break;
                             default:
-                                printf("Opção invalida. Tente novamente.\n");
+                                printf("Opcao invalida. Tente novamente.\n");
                         }
                     } while (menu_opcao != 7);
                 } else {
@@ -442,7 +496,7 @@ int main() {
                 printf("Saindo...\n");
                 break;
             default:
-                printf("Opção invalida. Tente novamente.\n");
+                printf("Opcao invalida. Tente novamente.\n");
         }
     } while (opcao != 3);
     return 0;
