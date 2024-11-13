@@ -1,4 +1,4 @@
-# Pokemon_Battle-C
+
 CCP230/CC2632 T.010.610 / Projeto 3
 ## Participantes do Grupo
 
@@ -52,6 +52,18 @@ Para compilar e executar o projeto, siga os seguintes passos:
     ```sh
     git push -u origin master
     ```
+## Especificações
+O programa do administrador deve ser desenvolvido em C e conter as opções:
+
+Efetuar login​ usando CPF e senha: o menu principal deve aparecer apenas se estas informações estiverem corretas;
+Cadastro de novo investidor: o usuário deve informar nome, CPF e senha do novo investidor;
+Excluir investidor: o usuário deve informar o CPF do investidor. O programa deve exibir os dados encontrados para o CPF e pedir a confirmação para realizar a exclusão;
+Cadastro de criptomoeda: devem ser informados nome, cotação inicial, taxa de compra e taxa de venda;
+Excluir criptomoeda: usuário deve informar o nome da criptomoeda. O programa deve exibir os dados da moeda e pedir a confirmação da exclusão;
+Consultar saldo de um investidor: deve ser informado o CPF do investidor e o saldo deve ser exibido na tela
+Consultar extrado de um investidor: usuário informa o CPF do investidor e o extrado é exibido na tela
+Atualizar cotação de criptomoedas: a função de atualização deve usar a mesma função do programa do investidor.
+O programa do investidor deve ser modificado para poder fazer a compra de qualquer criptomoeda que foi cadastrado pelo administrador, mantendo as outras funcionalidades como na versão entregue no projeto 1.
 
 ## Forma de Uso
 
