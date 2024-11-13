@@ -1,4 +1,4 @@
-# Pokemon_Battle-C
+
 CCP230/CC2632 T.010.610 / Projeto 3
 ## Participantes do Grupo
 
