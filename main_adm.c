@@ -7,6 +7,12 @@
 #define MAX_NOME 100
 #define MAX_CPF 12
 #define MAX_SENHA 20
+#define MAX_MOEDA_TAMANHO 100
+#define ARQUIVO_COTACAO "cotacao.txt"
+#define ARQUIVO_USUARIOS "usuarios.txt"
+#define ARQUIVO_TRANSACOES "transacoes.txt"
+
+
 
 typedef struct {
     char nome[MAX_NOME];
@@ -172,16 +178,66 @@ void consultar_saldo() {
     // consultar no txt
 }
 
-void consultar_extrato() {
-    // colocar o arquivo do extrato.txt pra mostrar aqui
+void consultar_extrato(int index) {
+    if (index < 0 || index >= num_usuarios) {
+        printf("Índice de usuário inválido.\n");
+        return;
+    }
+
+    FILE *fp = fopen("extrato.txt", "r");
+    if (fp == NULL) {
+        printf("Erro ao abrir o arquivo de extratos.\n");
+        return;
+    }
+
+    char linha[255];
+    printf("\nExtratos de Transacoes do CPF: %s\n", usuarios[index].cpf);
+    printf("-----------------------------------------------\n");
+    while (fgets(linha, sizeof(linha), fp) != NULL) {
+        printf("%s", linha);
+    }
+    printf("-----------------------------------------------\n");
+    fclose(fp);
 }
 
-void atualizar_cotacao() {
-    // colocar o arquivo do cotacao.txt para atualizar aqui
+void atualizar_cotacao(){
+    char nome[MAX_MOEDA_TAMANHO];
+    double cotacao;
+    double variacao;
+
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
+
+    int linhas = 0;
+    char buffer[1024];
+    while(fgets(buffer, sizeof(buffer), file) != NULL){
+        linhas++; 
+    }
+    rewind(file);
+
+    Criptomoeda arquivo_novo[linhas];
+    int contador = 0;
+    while(fscanf(file, "%s %lf", nome, &cotacao) != EOF){
+        variacao = (rand() / (double)RAND_MAX) * 0.1 - 0.05; // Variacao entre -5% e +5%
+        cotacao *= (1 + variacao);
+
+        strncpy(arquivo_novo[contador].nome, nome, MAX_MOEDA_TAMANHO);
+        arquivo_novo[contador].cotacao = cotacao;
+        contador++;
+    }
+
+    file = fopen(ARQUIVO_COTACAO, "w");
+    for(int i=0; i < contador; i++){
+        fprintf(file, "%s %lf\n", arquivo_novo[i].nome, arquivo_novo[i].cotacao);
+    }
+
+    fclose(file);
 }
+
+
 
 int main() {
     char cpf[MAX_CPF], senha[MAX_SENHA];
+    int index = 0;
 
     carregar_usuarios();
     carregar_criptomoedas();
@@ -196,7 +252,7 @@ int main() {
         return 1;
     }
 
-    int opcao;
+ int opcao, usuario_index;
     do {
         printf("\nMenu Principal:\n");
         printf("1. Cadastro de Usuário\n");
@@ -216,10 +272,20 @@ int main() {
             case 3: cadastrar_criptomoeda(); break;
             case 4: excluir_criptomoeda(); break;
             case 5: consultar_saldo(); break;
-            case 6: consultar_extrato(); break;
-            case 7: atualizar_cotacao(); break;
-            case 0: printf("Saindo...\n"); break;
-            default: printf("Opção inválida!\n"); break;
+            case 6: 
+                printf("Digite o índice do usuário para consultar o extrato: ");
+                scanf("%d", &usuario_index);
+                consultar_extrato(usuario_index); 
+                break;
+            case 7:
+                atualizar_cotacao(0); 
+                break;
+            case 0: 
+                printf("Saindo...\n");
+                break;
+            default: 
+                printf("Opção inválida!\n"); 
+                break;
         }
     } while (opcao != 0);
 
