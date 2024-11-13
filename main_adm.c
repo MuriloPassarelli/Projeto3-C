@@ -119,48 +119,68 @@ void excluir_usuario() {
     printf("Usuário não encontrado.\n");
 }
 
+// Função para cadastrar uma nova criptomoeda
 void cadastrar_criptomoeda() {
-    Criptomoeda nova_criptomoeda;
-    printf("Digite o nome da criptomoeda: ");
-    scanf("%s", nova_criptomoeda.nome);
-    printf("Digite a cotação inicial: ");
-    scanf("%f", &nova_criptomoeda.cotacao);
-    printf("Digite a taxa de compra: ");
-    scanf("%f", &nova_criptomoeda.taxa_compra);
-    printf("Digite a taxa de venda: ");
-    scanf("%f", &nova_criptomoeda.taxa_venda);
-    criptomoedas[num_criptomoedas++] = nova_criptomoeda;
-    salvar_criptomoedas();
-    printf("Criptomoeda cadastrada com sucesso.\n");
+    FILE *file = fopen("criptomoedas.txt", "a");
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        return;
+    }
 
-    // modificar no txt
+    char nome[30];
+    float cotacaoInicial, taxaCompra, taxaVenda;
+
+    printf("Nome da Criptomoeda: ");
+    scanf("%s", nome);
+    printf("Cotação Inicial: ");
+    scanf("%f", &cotacaoInicial);
+    printf("Taxa de Compra: ");
+    scanf("%f", &taxaCompra);
+    printf("Taxa de Venda: ");
+    scanf("%f", &taxaVenda);
+
+    fprintf(file, "%s %.2f %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
+    fclose(file);
+    printf("Criptomoeda cadastrada com sucesso!\n");
 }
 
+// Função para excluir uma criptomoeda pelo nome
 void excluir_criptomoeda() {
-    char nome[MAX_NOME];
-    printf("Digite o nome da criptomoeda a ser excluída: ");
-    scanf("%s", nome);
+    FILE *file = fopen("cotacao.txt", "r");
+    FILE *tempFile = fopen("temp.txt", "w");
 
-    for (int i = 0; i < num_criptomoedas; i++) {
-        if (strcmp(criptomoedas[i].nome, nome) == 0) {
-            printf("Criptomoeda encontrada: %s, Cotação: %.2f, Taxa de Compra: %.2f, Taxa de Venda: %.2f\n", criptomoedas[i].nome,
-                   criptomoedas[i].cotacao, criptomoedas[i].taxa_compra, criptomoedas[i].taxa_venda);
-            printf("Confirma a exclusão? (s/n): ");
-            char confirmacao;
-            scanf(" %c", &confirmacao);
-            if (confirmacao == 's' || confirmacao == 'S') {
-                for (int j = i; j < num_criptomoedas - 1; j++) {
-                    criptomoedas[j] = criptomoedas[j + 1];
-                }
-                num_criptomoedas--;
-                salvar_criptomoedas();
-                printf("Criptomoeda excluída com sucesso.\n");
-            }
-            return;
+    if (file == NULL || tempFile == NULL) {
+        printf("Erro ao abrir o arquivo!\n");
+        return;
+    }
+
+    char nome[30], nomeParaExcluir[30];
+    float cotacaoInicial, taxaCompra, taxaVenda;
+
+    printf("Nome da Criptomoeda para excluir: ");
+    scanf("%s", nomeParaExcluir);
+
+    int found = 0;
+    while (fscanf(file, "%s %f %f %f", nome, &cotacaoInicial, &taxaCompra, &taxaVenda) != EOF) {
+        if (strcmp(nome, nomeParaExcluir) != 0) {
+            fprintf(tempFile, "%s %.2f %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
+        } else {
+            found = 1;
         }
     }
-    printf("Criptomoeda não encontrada.\n");
-    // modificar no txt
+
+    fclose(file);
+    fclose(tempFile);
+
+    // Remove o arquivo original e renomeia o temporário
+    remove("criptomoedas.txt");
+    rename("temp.txt", "criptomoedas.txt");
+
+    if (found) {
+        printf("Criptomoeda excluída com sucesso!\n");
+    } else {
+        printf("Criptomoeda não encontrada.\n");
+    }
 }
 
 void consultar_saldo() {
