@@ -161,55 +161,6 @@ void ler_usuarios(){
     fclose(file);
 }
 
-// Funcao para registrar um novo usuario
-void registrar(){
-    if(num_usuarios >= MAX_USUARIOS){
-        printf("Numero maximo de usuarios atingido.\n");
-        return;
-    }
-    char cpf[MAX_CPF_TAMANHO];
-    char senha[MAX_SENHA_TAMANHO];
-    printf("Informe seu CPF(somente numeros): ");
-    scanf("%s", cpf);
-    if(strlen(cpf) != 11){
-        printf("CPF invalido. Deve conter 11 numeros.\n");
-        return;
-    }
-    printf("Informe sua senha(6 digitos, somente numeros): ");
-    scanf("%s", senha);
-    if(strlen(senha) != 6){
-        printf("Senha invalida. Deve ter 6 digitos.\n");
-        return;
-    }
-    for(int i = 0; i < num_usuarios; i++){
-        if(strcmp(cpf, usuarios[i].cpf) == 0){
-            printf("CPF ja registrado.\n");
-            return;
-        }
-    }
-    Usuario novo_usuario;
-    strcpy(novo_usuario.cpf, cpf);
-    strcpy(novo_usuario.senha, senha);
-    novo_usuario.saldo = 0.0;
-    novo_usuario.num_transacoes = 0;
-    novo_usuario.num_criptomoedas = 0;
-
-    char nome[MAX_MOEDA_TAMANHO];
-    FILE *file = fopen(ARQUIVO_COTACAO, "r");
-    if(file != NULL){
-        while(fscanf(file, "%s %*lf %*f %*f\n", nome) != EOF){
-            strcpy(novo_usuario.cripto[novo_usuario.num_criptomoedas].nome, nome);
-            novo_usuario.cripto[novo_usuario.num_criptomoedas].quantidade = 0.0;
-            novo_usuario.num_criptomoedas++;
-        }
-    }
-    fclose(file);
-
-    usuarios[num_usuarios++] = novo_usuario;
-    salvar_usuarios();
-    printf("Usuario registrado com sucesso!\n");
-}
-
 // Funcao para verificar se o usuario existe e a senha esta correta
 int verificar_usuario(const char *cpf, const char *senha){
     for(int i = 0; i < num_usuarios; i++){
@@ -437,20 +388,28 @@ void vender_criptomoedas(int index){
 // Exibir extratos do usuario
 void exibir_extrato(int index){
     FILE *fp = fopen(ARQUIVO_EXTRATO, "r");
-        if(fp == NULL){
-            printf("Erro ao abrir o arquivo de extratos.\n");
-            return;
+    if(fp == NULL){
+        printf("Erro ao abrir o arquivo de extratos.\n");
+        return;
+    }
+
+    printf("\nExtratos de Transacoes do CPF: %s\n", usuarios[index].cpf);
+    printf("-----------------------------------------------\n");
+
+    char linha[255];
+    while(fgets(linha, sizeof(linha), fp) != NULL){
+        char cpf_check[MAX_CPF_TAMANHO];
+
+        if(sscanf(linha, "CPF: %s |", cpf_check) == 1){
+            if(strcmp(usuarios[index].cpf, cpf_check) == 0){
+                printf("%s", linha);
+            }
         }
-        char linha[255];
-        printf("\nExtratos de Transacoes do CPF: %s\n", usuarios[index].cpf);
-        printf("-----------------------------------------------\n");
-        while(fgets(linha, sizeof(linha), fp) != NULL){
-            printf("%s", linha);
-        }
-        printf("-----------------------------------------------\n");
+    }
+
+    printf("-----------------------------------------------\n");
     fclose(fp);
-    return;
-};
+}
 
 // Funcao principal
 int main(){
@@ -459,16 +418,12 @@ int main(){
     int opcao;
     do{
         printf("\nMenu:\n");
-        printf("1. Registrar\n");
-        printf("2. Login\n");
-        printf("3. Sair\n");
+        printf("1. Login\n");
+        printf("2. Sair\n");
         printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
         switch(opcao){
-            case 1:
-                registrar();
-                break;
-            case 2:{
+            case 1:{
                 char cpf[MAX_CPF_TAMANHO], senha[MAX_SENHA_TAMANHO];
                 printf("Informe seu CPF: ");
                 scanf("%s", cpf);
@@ -521,7 +476,7 @@ int main(){
                 }
                 break;
             }
-            case 3:
+            case 2:
                 printf("Saindo...\n");
                 break;
             default:
