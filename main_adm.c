@@ -1,93 +1,138 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAX_USUARIOS 100
-#define MAX_CRIPTOMOEDAS 50
-#define MAX_NOME 100
-#define MAX_CPF 12
-#define MAX_SENHA 20
-#define MAX_MOEDA_TAMANHO 100
-#define ARQUIVO_COTACAO "cotacao.txt"
+#include <time.h>
+#define MAX_CPF_TAMANHO 12
+#define MAX_SENHA_TAMANHO 7
+#define MAX_MOEDA_TAMANHO 20
 #define ARQUIVO_USUARIOS "usuarios.txt"
-#define ARQUIVO_TRANSACOES "transacoes.txt"
-#define ARQUIVO_ADM "adm_usuario.txt"
+#define ARQUIVO_EXTRATO "extrato.txt"
+#define ARQUIVO_COTACAO "cotacao.txt"
+#define ARQUIVO_ADM "adm_usuarios.txt"
+#define MAX_CRIPTOMOEDAS 50
+#define MAX_USUARIOS 10
+#define MAX_TRANSACOES 100
 
+// Estrutura com nome e valor das criptomoedas de um usuario
+typedef struct{
+    char nome[MAX_MOEDA_TAMANHO];
+    double quantidade;
+}Cripto_Usuario;
 
-typedef struct {
-    char nome[MAX_NOME];
-    char cpf[MAX_CPF];
-    char senha[MAX_SENHA];
-    float saldo;
-} Usuario;
+// Estrutura para armazenar dados do usuario
+typedef struct{
+    char cpf[MAX_CPF_TAMANHO];
+    char senha[MAX_SENHA_TAMANHO];
+    double saldo;
+    Cripto_Usuario cripto[MAX_CRIPTOMOEDAS];
+    int num_criptomoedas;
+    int num_transacoes;
+    double transacoes[MAX_TRANSACOES][4]; // [data, valor, taxa, tipo]
+}Usuario;
+Usuario usuarios[MAX_USUARIOS];
+int num_usuarios = 0; // Contador de usuarios
 
-typedef struct {
-    char nome[MAX_NOME];
-    float cotacao;
+// Estrutura das criptomoedas
+typedef struct{
+    char nome[MAX_MOEDA_TAMANHO];
+    double cotacao;
     float taxa_compra;
     float taxa_venda;
-} Criptomoeda;
-
-Usuario usuarios[MAX_USUARIOS];
+}Criptomoeda;
 Criptomoeda criptomoedas[MAX_CRIPTOMOEDAS];
-int num_usuarios = 0, num_criptomoedas = 0;
+int num_criptomoedas = 0;
 
-void carregar_usuarios() {
-    FILE *file = fopen("usuarios.txt", "r");
-    if (!file) return;
-    while (fscanf(file, "%s %s %s %f\n", usuarios[num_usuarios].nome, usuarios[num_usuarios].cpf,
-                  usuarios[num_usuarios].senha, &usuarios[num_usuarios].saldo) != EOF) {
-        num_usuarios++;
-    }
-    fclose(file);
-}
-
-void carregar_criptomoedas() {
-    FILE *file = fopen("criptomoedas.txt", "r");
-    if (!file) return;
-    while (fscanf(file, "%s %f %f %f\n", criptomoedas[num_criptomoedas].nome, &criptomoedas[num_criptomoedas].cotacao,
-                  &criptomoedas[num_criptomoedas].taxa_compra, &criptomoedas[num_criptomoedas].taxa_venda) != EOF) {
+void carregar_criptomoedas(){
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
+    if(!file) return;
+    while(fscanf(file, "%s %lf %f %f\n", criptomoedas[num_criptomoedas].nome, &criptomoedas[num_criptomoedas].cotacao,
+                  &criptomoedas[num_criptomoedas].taxa_compra, &criptomoedas[num_criptomoedas].taxa_venda) != EOF){
         num_criptomoedas++;
     }
     fclose(file);
 }
 
-void salvar_usuarios() {
-    FILE *file = fopen("usuarios.txt", "w");
-    if (!file) return;
-    for (int i = 0; i < num_usuarios; i++) {
-        fprintf(file, "%s %s %s %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].senha, usuarios[i].saldo);
+void salvar_usuarios(){
+    FILE *file = fopen(ARQUIVO_USUARIOS, "wb");
+    if(file == NULL){
+        printf("Erro ao abrir o arquivo de usuarios.\n");
+        return;
     }
+    fwrite(&num_usuarios, sizeof(int), 1, file);
+    fwrite(usuarios, sizeof(Usuario), num_usuarios, file);
     fclose(file);
 }
 
-void salvar_criptomoedas() {
-    FILE *file = fopen("criptomoedas.txt", "w");
-    if (!file) return;
-    for (int i = 0; i < num_criptomoedas; i++) {
-        fprintf(file, "%s %.2f %.2f %.2f\n", criptomoedas[i].nome, criptomoedas[i].cotacao, criptomoedas[i].taxa_compra,
-                criptomoedas[i].taxa_venda);
+// Funcao para ler usuarios e saldos do arquivo binario
+void ler_usuarios(){
+    FILE *file = fopen(ARQUIVO_USUARIOS, "rb");
+    if(file == NULL){
+        printf("Erro ao abrir o arquivo de usuarios. Criando novo arquivo.\n");
+        return;
     }
+    fread(&num_usuarios, sizeof(int), 1, file);
+    fread(usuarios, sizeof(Usuario), num_usuarios, file);
     fclose(file);
 }
 
-void cadastrar_usuario() {
+// Funcao para registrar um novo usuario
+void cadastrar_usuario(){
+    if(num_usuarios >= MAX_USUARIOS){
+        printf("Numero maximo de usuarios atingido.\n");
+        return;
+    }
+
+    char cpf[MAX_CPF_TAMANHO];
+    char senha[MAX_SENHA_TAMANHO];
+    printf("Informe seu CPF(somente numeros): ");
+    scanf("%s", cpf);
+    if(strlen(cpf) != 11){
+        printf("CPF invalido. Deve conter 11 numeros.\n");
+        return;
+    }
+
+    printf("Informe sua senha(6 digitos, somente numeros): ");
+    scanf("%s", senha);
+    if(strlen(senha) != 6){
+        printf("Senha invalida. Deve ter 6 digitos.\n");
+        return;
+    }
+    
+    for(int i = 0; i < num_usuarios; i++){
+        if(strcmp(cpf, usuarios[i].cpf) == 0){
+            printf("CPF ja registrado.\n");
+            return;
+        }
+    }
+
     Usuario novo_usuario;
-    printf("Digite o CPF: ");
-    scanf("%s", novo_usuario.cpf);
-    printf("Digite a senha: ");
-    scanf("%s", novo_usuario.senha);
+    strcpy(novo_usuario.cpf, cpf);
+    strcpy(novo_usuario.senha, senha);
     novo_usuario.saldo = 0.0;
+    novo_usuario.num_transacoes = 0;
+    novo_usuario.num_criptomoedas = 0;
+
+    char nome[MAX_MOEDA_TAMANHO];
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
+    if(file != NULL){
+        while(fscanf(file, "%s %*lf %*f %*f\n", nome) != EOF){
+            strcpy(novo_usuario.cripto[novo_usuario.num_criptomoedas].nome, nome);
+            novo_usuario.cripto[novo_usuario.num_criptomoedas].quantidade = 0.0;
+            novo_usuario.num_criptomoedas++;
+        }
+    }
+    fclose(file);
+
     usuarios[num_usuarios++] = novo_usuario;
     salvar_usuarios();
-    printf("Usuário cadastrado com sucesso.\n");
+    printf("Usuario registrado com sucesso!\n");
 }
 
 int cadastrar_administrador() {
     FILE *arquivo;
-    char cpf[MAX_CPF], senha[MAX_SENHA];
+    char cpf[MAX_CPF_TAMANHO], senha[MAX_SENHA_TAMANHO];
 
-    arquivo = fopen("administrador.txt", "w");
+    arquivo = fopen(ARQUIVO_ADM, "w");
     if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo!\n");
         return 0; 
@@ -109,13 +154,13 @@ int cadastrar_administrador() {
 
 int efetuar_login() {
     FILE *arquivo;
-    char cpf[MAX_CPF], senha[MAX_SENHA];
-    char cpf_arquivo[MAX_CPF], senha_arquivo[MAX_SENHA];
+    char cpf[MAX_CPF_TAMANHO], senha[MAX_SENHA_TAMANHO];
+    char cpf_arquivo[MAX_CPF_TAMANHO], senha_arquivo[MAX_SENHA_TAMANHO];
 
 
-    arquivo = fopen("administrador.txt", "r");
+    arquivo = fopen(ARQUIVO_ADM, "r");
     if (arquivo == NULL) {
-        printf("Administrador não cadastrado.\n");
+        printf("Administrador nao cadastrado.\n");
         return 0; 
     }
 
@@ -136,34 +181,35 @@ int efetuar_login() {
         return 0; 
     }
 }
-void excluir_usuario() {
-    char cpf[MAX_CPF];
-    printf("Digite o CPF do usuário a ser excluído: ");
+
+void excluir_usuario(){
+    char cpf[MAX_CPF_TAMANHO];
+    printf("Digite o CPF do usuario a ser excluido: ");
     scanf("%s", cpf);
 
-    for (int i = 0; i < num_usuarios; i++) {
-        if (strcmp(usuarios[i].cpf, cpf) == 0) {
-            printf("Usuário encontrado: %s, CPF: %s, Saldo: %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].saldo);
-            printf("Confirma a exclusão? (s/n): ");
+    for(int i = 0; i < num_usuarios; i++){
+        if(strcmp(usuarios[i].cpf, cpf) == 0){
+            printf("Usuario encontrado: \nCPF: %s, Saldo em Reais: %.2f\n", usuarios[i].cpf, usuarios[i].saldo);
+            printf("Confirma a exclusao?(s/n): ");
             char confirmacao;
             scanf(" %c", &confirmacao);
-            if (confirmacao == 's' || confirmacao == 'S') {
-                for (int j = i; j < num_usuarios - 1; j++) {
+            if(confirmacao == 's' || confirmacao == 'S'){
+                for(int j = i; j < num_usuarios - 1; j++){
                     usuarios[j] = usuarios[j + 1];
                 }
                 num_usuarios--;
                 salvar_usuarios();
-                printf("Usuário excluído com sucesso.\n");
+                printf("Usuario excluido com sucesso.\n");
             }
             return;
         }
     }
-    printf("Usuário não encontrado.\n");
+    printf("Usuario nao encontrado.\n");
 }
 
-// Função para cadastrar uma nova criptomoeda
+// Funcao para cadastrar uma nova criptomoeda
 void cadastrar_criptomoeda() {
-    FILE *file = fopen("criptomoedas.txt", "a");
+    FILE *file = fopen(ARQUIVO_COTACAO, "a");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo!\n");
         return;
@@ -174,7 +220,7 @@ void cadastrar_criptomoeda() {
 
     printf("Nome da Criptomoeda: ");
     scanf("%s", nome);
-    printf("Cotação Inicial: ");
+    printf("Cotacao Inicial: ");
     scanf("%f", &cotacaoInicial);
     printf("Taxa de Compra: ");
     scanf("%f", &taxaCompra);
@@ -186,9 +232,9 @@ void cadastrar_criptomoeda() {
     printf("Criptomoeda cadastrada com sucesso!\n");
 }
 
-// Função para excluir uma criptomoeda pelo nome
+// Funcao para excluir uma criptomoeda pelo nome
 void excluir_criptomoeda() {
-    FILE *file = fopen("cotacao.txt", "r");
+    FILE *file = fopen(ARQUIVO_COTACAO, "r");
     FILE *tempFile = fopen("temp.txt", "w");
 
     if (file == NULL || tempFile == NULL) {
@@ -214,39 +260,39 @@ void excluir_criptomoeda() {
     fclose(file);
     fclose(tempFile);
 
-    // Remove o arquivo original e renomeia o temporário
-    remove("criptomoedas.txt");
-    rename("temp.txt", "criptomoedas.txt");
+    // Remove o arquivo original e renomeia o temporario
+    remove(ARQUIVO_COTACAO);
+    rename("temp.txt", ARQUIVO_COTACAO);
 
     if (found) {
-        printf("Criptomoeda excluída com sucesso!\n");
+        printf("Criptomoeda excluida com sucesso!\n");
     } else {
-        printf("Criptomoeda não encontrada.\n");
+        printf("Criptomoeda nao encontrada.\n");
     }
 }
 
 void consultar_saldo() {
-    char cpf[MAX_CPF];
-    printf("Digite o CPF do usuário: ");
+    char cpf[MAX_CPF_TAMANHO];
+    printf("Digite o CPF do usuario: ");
     scanf("%s", cpf);
 
     for (int i = 0; i < num_usuarios; i++) {
         if (strcmp(usuarios[i].cpf, cpf) == 0) {
-            printf("Saldo de %s (CPF: %s): %.2f\n", usuarios[i].nome, usuarios[i].cpf, usuarios[i].saldo);
+            printf("CPF: %s, Saldo em Reais: %.2f\n", usuarios[i].cpf, usuarios[i].saldo);
             return;
         }
     }
-    printf("Usuário não encontrado.\n");
+    printf("Usuario nao encontrado.\n");
     // consultar no txt
 }
 
 void consultar_extrato(int index) {
     if (index < 0 || index >= num_usuarios) {
-        printf("Índice de usuário inválido.\n");
+        printf("Indice de usuario invalido.\n");
         return;
     }
 
-    FILE *fp = fopen("extrato.txt", "r");
+    FILE *fp = fopen(ARQUIVO_EXTRATO, "r");
     if (fp == NULL) {
         printf("Erro ao abrir o arquivo de extratos.\n");
         return;
@@ -296,17 +342,17 @@ void atualizar_cotacao(){
 }
 
 int main() {
-    char cpf[MAX_CPF], senha[MAX_SENHA];
+    char cpf[MAX_CPF_TAMANHO], senha[MAX_SENHA_TAMANHO];
     int opcao, usuario_index;
     int admin_logado = 0;
 
     // Menu inicial para registrar ou fazer login
     do {
-        printf("Escolha uma opção:\n");
+        printf("Escolha uma opcao:\n");
         printf("1. Cadastrar administrador\n");
         printf("2. Login como administrador\n");
         printf("0. Sair\n");
-        printf("Escolha uma opção: ");
+        printf("Escolha uma opcao: ");
         scanf("%d", &opcao);
 
         switch (opcao) {
@@ -324,25 +370,25 @@ int main() {
                 printf("Saindo...\n");
                 return 0;
             default:
-                printf("Opção inválida!\n");
+                printf("Opcao invalida!\n");
                 break;
         }
 
     } while (admin_logado == 0);
 
-     printf("Acesso concedido ao painel de administração.\n");
-// Menu de administração
+     printf("Acesso concedido ao painel de administracao.\n");
+// Menu de administracao
 do {
     printf("\nMenu Principal:\n");
-    printf("1. Cadastro de Usuário\n");
-    printf("2. Excluir Usuário\n");
+    printf("1. Cadastro de Usuario\n");
+    printf("2. Excluir Usuario\n");
     printf("3. Cadastro de Criptomoeda\n");
     printf("4. Excluir Criptomoeda\n");
-    printf("5. Consultar Saldo de Usuário\n");
-    printf("6. Consultar Extrato de Usuário\n");
-    printf("7. Atualizar Cotação de Criptomoedas\n");
+    printf("5. Consultar Saldo de Usuario\n");
+    printf("6. Consultar Extrato de Usuario\n");
+    printf("7. Atualizar Cotacao de Criptomoedas\n");
     printf("0. Sair\n");
-    printf("Escolha uma opção: ");
+    printf("Escolha uma opcao: ");
     scanf("%d", &opcao);
 
     switch(opcao) {
@@ -362,7 +408,7 @@ do {
             consultar_saldo(); 
             break;
         case 6: 
-            printf("Digite o índice do usuário para consultar o extrato: ");
+            printf("Digite o indice do usuario para consultar o extrato: ");
             scanf("%d", &usuario_index);
             consultar_extrato(usuario_index); 
             break;
@@ -373,7 +419,7 @@ do {
             printf("Saindo...\n");
             break;
         default: 
-            printf("Opção inválida!\n"); 
+            printf("Opcao invalida!\n"); 
             break;
     }
 } while (opcao != 0);
