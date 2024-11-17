@@ -132,7 +132,7 @@ int cadastrar_administrador() {
     FILE *arquivo;
     char cpf[MAX_CPF_TAMANHO], senha[MAX_SENHA_TAMANHO];
 
-    arquivo = fopen(ARQUIVO_ADM, "w");
+    arquivo = fopen("administrador.txt", "w");
     if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo!\n");
         return 0; 
@@ -158,7 +158,7 @@ int efetuar_login() {
     char cpf_arquivo[MAX_CPF_TAMANHO], senha_arquivo[MAX_SENHA_TAMANHO];
 
 
-    arquivo = fopen(ARQUIVO_ADM, "r");
+    arquivo = fopen("administrador.txt", "r");
     if (arquivo == NULL) {
         printf("Administrador nao cadastrado.\n");
         return 0; 
@@ -208,51 +208,53 @@ void excluir_usuario(){
 }
 
 // Funcao para cadastrar uma nova criptomoeda
-void cadastrar_criptomoeda() {
+void cadastrar_criptomoeda(){
     FILE *file = fopen(ARQUIVO_COTACAO, "a");
-    if (file == NULL) {
+    if(file == NULL){
         printf("Erro ao abrir o arquivo!\n");
         return;
     }
 
     char nome[30];
-    float cotacaoInicial, taxaCompra, taxaVenda;
+    float taxaCompra, taxaVenda;
+    double cotacaoInicial;
 
     printf("Nome da Criptomoeda: ");
     scanf("%s", nome);
     printf("Cotacao Inicial: ");
-    scanf("%f", &cotacaoInicial);
+    scanf("%lf", &cotacaoInicial);
     printf("Taxa de Compra: ");
     scanf("%f", &taxaCompra);
     printf("Taxa de Venda: ");
     scanf("%f", &taxaVenda);
 
-    fprintf(file, "%s %.2f %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
+    fprintf(file, "%s %.2lf %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
     fclose(file);
     printf("Criptomoeda cadastrada com sucesso!\n");
 }
 
 // Funcao para excluir uma criptomoeda pelo nome
-void excluir_criptomoeda() {
+void excluir_criptomoeda(){
     FILE *file = fopen(ARQUIVO_COTACAO, "r");
     FILE *tempFile = fopen("temp.txt", "w");
 
-    if (file == NULL || tempFile == NULL) {
+    if(file == NULL || tempFile == NULL){
         printf("Erro ao abrir o arquivo!\n");
         return;
     }
 
-    char nome[30], nomeParaExcluir[30];
-    float cotacaoInicial, taxaCompra, taxaVenda;
+    char nome[MAX_MOEDA_TAMANHO], nomeParaExcluir[MAX_MOEDA_TAMANHO];
+    float taxaCompra, taxaVenda;
+    double cotacaoInicial;
 
     printf("Nome da Criptomoeda para excluir: ");
     scanf("%s", nomeParaExcluir);
 
     int found = 0;
-    while (fscanf(file, "%s %f %f %f", nome, &cotacaoInicial, &taxaCompra, &taxaVenda) != EOF) {
-        if (strcmp(nome, nomeParaExcluir) != 0) {
-            fprintf(tempFile, "%s %.2f %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
-        } else {
+    while(fscanf(file, "%s %lf %f %f", nome, &cotacaoInicial, &taxaCompra, &taxaVenda) != EOF){
+        if(strcmp(nome, nomeParaExcluir) != 0){
+            fprintf(tempFile, "%s %.2lf %.2f %.2f\n", nome, cotacaoInicial, taxaCompra, taxaVenda);
+        }else{
             found = 1;
         }
     }
@@ -264,9 +266,9 @@ void excluir_criptomoeda() {
     remove(ARQUIVO_COTACAO);
     rename("temp.txt", ARQUIVO_COTACAO);
 
-    if (found) {
+    if(found){
         printf("Criptomoeda excluida com sucesso!\n");
-    } else {
+    }else{
         printf("Criptomoeda nao encontrada.\n");
     }
 }
